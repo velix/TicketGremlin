@@ -1,13 +1,18 @@
-from escpos.printer import Usb
+from escpos.printer import Usb, Network
 from datetime import datetime
 from Printables import Message
 
 MAX_LINE_LEN = 42
+DEFAULT_PORT = 9100
 
 
 class StarPrinter:
-    def __init__(self):
-        self.device = Usb(0x0519, 0x0001, 0, profile="TSP600")
+    def __init__(self, host=None, port=DEFAULT_PORT):
+        self.connection = "usb" if host is None else "network"
+        if host is None:
+            self.device = Usb(0x0519, 0x0001, 0, profile="TSP600", out_ep=0x03)
+        else:
+            self.device = Network(host, port, profile="TSP600")
         self.max_line_len = 42
 
     def printMessage(self, message):

@@ -28,9 +28,9 @@ A small python program that prints "Work Tickets", notes, tasks, etc on a Star M
 
 3. Install the dependencies.
 
-> Wait! You should inspect the requirements.txt file and ensure it fits your needs. Notice that only the "Usb" portion of the escpos package is used. My printer is connected via USB, therefore that's all gremlin supports. Serial, Network, and Bluetooth functionality will have to wait until I can get my hands on a thermal printer released within the last 2 decades.
-
 ```$ pip install -r requirements.txt```
+
+> The requirements.txt file includes both the "Usb" and "Network" portions of the escpos package, so gremlin can talk to your printer over USB or Ethernet. Serial and Bluetooth aren't supported (yet).
 
 4. \[Optional\] Create an alias for gremlin.
     - Make gremlin's `main.py` file executable. ```chmod +x main.py```
@@ -51,6 +51,39 @@ A small python program that prints "Work Tickets", notes, tasks, etc on a Star M
     - If you do not see your username included in the "lp" group, add yourself (assuming you have sudo permission) by entering ```sudo usermod -aG lp <your_username>```. The next time you log into your shell, you will have the necessary permissions.
 
 6. Give it a shot! Run ```gremlin --print-config``` to see what happens.
+
+## Connecting over Ethernet (Network)
+
+By default gremlin looks for the printer on USB. To connect to a network-connected printer (via its Ethernet port) you can pass the printer's IP address with the `--host` flag:
+
+```
+gremlin -t "Network test" -m "Hello from ethernet!" --host 192.168.1.50
+```
+
+By default gremlin uses port `9100`, which is the standard printer port for ESC/POS over Ethernet. If your printer listens elsewhere, pass `--port`:
+
+```
+gremlin -m "..." --host 192.168.1.50 --port 9101
+```
+
+### Config file (optional)
+
+Rather than typing `--host` every time, you can store it in a config file. Create `~/.config/gremlin/gremlin.ini`:
+
+```
+[printer]
+host = 192.168.1.50
+port = 9100
+```
+
+Now every gremlin command will use that printer automatically. Any flags you pass on the command line (like `--host` or `--port`) take priority over the config file. To use a different config file, pass `--config /path/to/gremlin.ini`.
+
+### Troubleshooting Ethernet connections
+
+- Run `gremlin --print-config` (with your `--host`) to confirm gremlin shows `Connection: network` instead of `Connection: usb`.
+- Double check the printer's IP address. Most thermal printers can print their own network config via a self-test/label button on the back.
+- Ensure the printer and your machine are on the same network, and that port `9100` isn't blocked by a firewall.
+- If you don't pass `--host` (and no `host` is in your config file), gremlin falls back to USB — so a missing flag looks exactly like an unplugged USB printer.
 
 ## Basic Usage
 

@@ -18,10 +18,10 @@ class Message:
         text_arr = []
         # Loop through the lines and push them to the text_arr
         for line in tmp_arr:
-            # ignore this if it's an image path
+            # Image lines should not be wrapped, preserve as-is
             if line.startswith("[[image]]"):
+                text_arr.append(line.strip())
                 continue
-
             # Continue splitting and adding lines until you're left with
             # something that'll fit on one line.
             while len(line) > self.MAX_LEN:

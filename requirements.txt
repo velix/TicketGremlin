@@ -1,4 +1,4 @@
-python-escpos[usb]
+python-escpos[usb,network]
 pyusb
 Pillow
 qrcode
