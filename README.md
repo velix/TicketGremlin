@@ -143,3 +143,25 @@ Images can be included by starting a new line with `[[image]]` followed by the f
 5. Try to run it again.
 
 ---
+
+## Character Set Support
+
+The Star Micronics TSP650 printer supports the following character sets:
+
+| Character Set | Support | Notes |
+|---------------|---------|-------|
+| **Standard ASCII (32-126)** | ✅ Fully supported | All standard characters including $, !, @, #, %, ^, &, * work correctly |
+| **Extended ASCII (127-255)** | ❌ Not supported | Shows as garbage or "?" characters |
+| **Unicode Latin accented** | ⚠️ Partial support | Common accented vowels (à, é, ü, ï, etc.) work |
+| **Unicode Greek letters** | ❌ Not supported | Shows as garbage or "?" characters |
+| **Currency symbols** | ❌ Mostly not supported | €, £, ¥, etc. do not work; use text codes like "EUR", "USD", "kr" instead |
+| **Text-based currency codes** | ✅ Supported | "kr", "USD", "EUR", etc. print correctly |
+
+### Recommendations
+- Use **standard ASCII characters** (0-127) for maximum compatibility
+- For accented characters, test first - many Latin-1 Supplement characters work
+- Avoid **extended ASCII** (127-255) - these will not print correctly
+- Use **text currency codes** ("EUR", "USD", "kr") instead of symbols (€, $, £) for reliability
+
+---
+

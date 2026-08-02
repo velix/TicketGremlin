@@ -8,6 +8,7 @@ DEFAULT_CONFIG_PATH = path.join(
 
 DEFAULTS = {
     "printer": {
+        "connection": "usb",
         "host": "",
         "port": "9100",
     }
@@ -15,7 +16,18 @@ DEFAULTS = {
 
 
 def load_config(config_path=DEFAULT_CONFIG_PATH):
-    """Load printer settings from the gremlin config file."""
+    """Load printer settings from env vars or config file."""
+    connection = os.getenv("PRINTER_CONNECTION")
+    host = os.getenv("PRINTER_HOST")
+    port = os.getenv("PRINTER_PORT", "9100")
+
+    if connection is not None or host is not None:
+        return {
+            "connection": connection or "usb",
+            "host": host or "",
+            "port": port
+        }
+
     config = configparser.ConfigParser()
     config.read_dict(DEFAULTS)
 

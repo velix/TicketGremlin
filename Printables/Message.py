@@ -6,7 +6,7 @@ def getNChars(text, n):
 class Message:
     def __init__(self, subject=None, body="", max_len=42):
         self.MAX_LEN = max_len
-        self.subject = subject
+        self.setSubject(subject)
         self.setBody(body)
 
     def setSubject(self, new_subject):
