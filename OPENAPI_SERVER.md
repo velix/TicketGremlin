@@ -165,7 +165,7 @@ docker build -t ticketgremlin-openapi .
 # Run with USB passthrough
 docker run -d \
   --name ticketgremlin \
-  -p 8080:8080 \
+  -p 7143:8080 \
   --device /dev/bus/usb \
   -e PRINTER_CONNECTION=usb \
   -v $(pwd)/config.json:/app/config.json:ro \
@@ -181,7 +181,7 @@ services:
   ticketgremlin:
     build: .
     ports:
-      - "8080:8080"
+      - "7143:8080"
     environment:
       - PRINTER_CONNECTION=usb
     devices:
