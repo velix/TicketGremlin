@@ -1,11 +1,74 @@
-.venv
+# Python
 __pycache__
-*.pyc
-*.pyo
-*.pyd
-.DS_Store
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
 .env
 .venv
-*.egg-info
-dist
-build
+env/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Docker
+Dockerfile*
+docker-compose*
+.docker/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Local config (keep config.json)
+!config.json
+
+# Data directory (mounted as volume)
+!data/
+
+# Requirements files we want to keep
+!requirements.txt
+
+# Source code we want to keep
+!openapi_server.py
+!main.py
+!detect_script.py
+!test_charset.py
+!Printables/
+!Printers/
+!utils/
+!config.py

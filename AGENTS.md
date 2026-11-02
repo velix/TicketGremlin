@@ -77,11 +77,11 @@ Feed & cut only: `--feed-cut`
 Print config: `--print-config`
 
 ## Config
-Config file support is planned but not yet implemented in the CLI. Currently, printer settings must be modified in code.
+Printer connection is configured via env vars (PRINTER_CONNECTION=usb|network, PRINTER_HOST, PRINTER_PORT=9100) or `~/.config/gremlin/gremlin.ini`; env vars win. See `.env.example` for the Docker setup.
 
 ## Hardware
 Printer must be in ESC/POS mode: flip Dip Switch 1-1 to OFF.
-Current connection: USB only.
+Current connection: network (Ethernet, 192.168.2.118:9100). USB still supported via PRINTER_CONNECTION=usb.
 
 ## Code Structure
 - `main.py`: CLI entrypoint (argparse)

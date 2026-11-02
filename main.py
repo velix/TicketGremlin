@@ -4,6 +4,7 @@ import argparse
 from Printers.StarPrinter import StarPrinter
 from Printables.Message import Message
 from Printables.Task import Task
+from config import load_config
 from os import path
 
 GremlinConfig = {
@@ -12,8 +13,15 @@ GremlinConfig = {
     "Source": "github.com/krbeasley/TicketGremlin"
 }
 
-# Load the printer
-printer = StarPrinter()
+# Load the printer (USB by default, network when PRINTER_CONNECTION=network)
+printer_config = load_config()
+printer_host = None
+if printer_config.get("connection", "usb") == "network":
+    printer_host = printer_config.get("host", "") or None
+printer = StarPrinter(
+    host=printer_host,
+    port=int(printer_config.get("port", "9100"))
+)
 
 # Setup the argument parser
 parser = argparse.ArgumentParser(

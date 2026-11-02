@@ -1,5 +1,14 @@
+# Core dependencies for TicketGremlin
+# Printer support
 python-escpos[usb,network]
 pyusb
+
+# Image handling
 Pillow
 qrcode
 python-barcode
+
+# OpenAPI server
+fastapi>=0.104.0
+uvicorn>=0.24.0
+python-multipart

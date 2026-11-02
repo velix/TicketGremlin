@@ -1,20 +1,26 @@
 services:
   ticketgremlin:
-    build: .
-    ports:
-      - "8080:8080"
-    devices:
-      - "/dev/bus/usb:/dev/bus/usb"
-    volumes:
-      - ./images:/app/images
-    environment:
-      - PRINTER_CONNECTION=usb
-      - PRINTER_HOST=
-      - PRINTER_PORT=9100
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ticketgremlin
     restart: unless-stopped
+    ports:
+      - "7143:8080"
+    environment:
+      - PRINTER_CONNECTION=${PRINTER_CONNECTION:-usb}
+      - PRINTER_HOST=${PRINTER_HOST:-}
+      - PRINTER_PORT=${PRINTER_PORT:-9100}
+    # USB mode only: uncomment to pass the host USB bus into the container
+    # devices:
+    #   - "/dev/bus/usb:/dev/bus/usb"
+    volumes:
+      - ./data:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "python3", "-c", "import requests; requests.get('http://localhost:8080/health', timeout=5)"]
       interval: 60s
       timeout: 10s
       retries: 3
       start_period: 5s
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
