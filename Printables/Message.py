@@ -34,7 +34,7 @@ class Message:
 
                     # Check we're not stuck in a loop
                     if nCount > 4 * self.MAX_LEN:
-                        raise RuntimeError("Looped too many times reducing a string")
+                        raise ValueError("Could not wrap line within 42 chars")
 
                 # Remove nChars from the line
                 line = line.replace(nChars, "")
@@ -50,15 +50,12 @@ class Message:
     def setBody(self, body):
         try:
             self.body = self.createTextArray(body)
-        except IndexError:
-            print("Error: body could not be set on message")
-            print(f"Body: ${self.body}")
-            print(f"Type: ${type(self.body)}")
-            exit(1)
+        except (IndexError, ValueError) as e:
+            raise ValueError(f"Body could not be formatted: {e}")
 
     def parseNewLines(self, text):
         ret = []
-        lines = str(text).split("\\n")
+        lines = str(text).replace("\r\n", "\n").split("\n")
         for line in lines:
             ret.append(line)
             ret.append("")

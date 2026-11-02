@@ -12,7 +12,8 @@ class StarPrinter:
 
     def __init__(self, host, port=DEFAULT_PORT):
         self.connection = "network"
-        self.device = Network(host, port, profile="TSP600")
+        # timeout bounds how long a hung printer can block a print job
+        self.device = Network(host, port, timeout=10, profile="TSP600")
         self.max_line_len = 42
 
     def _printHorizontalLine(self, char='-', length=42):
