@@ -1,0 +1,4 @@
+# Dev-only: test suite (run with: .venv/bin/pytest)
+pytest==9.2.0
+httpx==0.28.1
+-r requirements.txt

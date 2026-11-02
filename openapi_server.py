@@ -41,7 +41,7 @@ origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_credentials=True,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -112,9 +112,11 @@ def _print_message_internal(printable):
     try:
         with print_lock:
             printer.device.open()
-            printer.printMessage(printable)
-            printer.cut()
-            printer.device.close()
+            try:
+                printer.printMessage(printable)
+                printer.cut()
+            finally:
+                printer.device.close()
     except Exception as e:
         logger.error(f"Printing failed: {str(e)}")
         raise HTTPException(
@@ -166,6 +168,9 @@ async def print_message(
         )
     except HTTPException:
         raise
+    except ValueError as e:
+        # Message formatting failed (bad input, not a server fault)
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.error(f"Error in print_message: {str(e)}")
         raise HTTPException(
@@ -207,6 +212,9 @@ async def print_task(
         )
     except HTTPException:
         raise
+    except ValueError as e:
+        # Task/message formatting failed (bad input, not a server fault)
+        raise HTTPException(status_code=422, detail=str(e))
     except Exception as e:
         logger.error(f"Error in print_task: {str(e)}")
         raise HTTPException(
@@ -234,9 +242,11 @@ async def feed_cut() -> FeedCutResponse:
     try:
         with print_lock:
             printer.device.open()
-            printer.device.ln()
-            printer.cut()
-            printer.device.close()
+            try:
+                printer.device.ln()
+                printer.cut()
+            finally:
+                printer.device.close()
         return FeedCutResponse(
             status="success",
             message="Paper fed and cut"
@@ -266,11 +276,13 @@ async def print_config() -> PrintConfigResponse:
     try:
         with print_lock:
             printer.device.open()
-            printer.device.textln(f"Printer Connection: {PRINTER_CONNECTION}")
-            printer.device.textln(f"Printer Host: {PRINTER_HOST or 'USB'}")
-            printer.device.textln(f"Printer Port: {PRINTER_PORT}")
-            printer.cut()
-            printer.device.close()
+            try:
+                printer.device.textln(f"Printer Connection: {PRINTER_CONNECTION}")
+                printer.device.textln(f"Printer Host: {PRINTER_HOST or 'USB'}")
+                printer.device.textln(f"Printer Port: {PRINTER_PORT}")
+                printer.cut()
+            finally:
+                printer.device.close()
 
         return PrintConfigResponse(
             status="success",
