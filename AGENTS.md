@@ -89,6 +89,7 @@ Current connection: network (Ethernet, raw TCP 9100 at 192.168.2.118). Set a DHC
 - `Printables/Message.py`: base message class, wraps lines at 42 chars
 - `Printables/Task.py`: Message + due date
 - `config.py`: env-var config loading
+- `tests/`: pytest suite (fake printer, no real I/O) — run `.venv/bin/pip install -r requirements-dev.txt && .venv/bin/pytest`
 
 ## Dependencies
 python-escpos[network], pyusb (import-time requirement of python-escpos), fastapi, uvicorn, requests (container healthcheck)
