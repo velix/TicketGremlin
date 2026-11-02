@@ -3,17 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from pydantic import BaseModel, Field
-from typing import Optional, Literal
-import os
+from typing import Literal
 import logging
 import threading
 
 from Printers.StarPrinter import StarPrinter
 from Printables.Message import Message
 from Printables.Task import Task
-from Printables.ImgMessage import ImgMessage
 from config import load_config
-from utils.image_utils import resize_image_for_printer
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -86,37 +83,10 @@ class PrintTaskResponse(BaseModel):
     due_date: str = Field(..., description="Due date that was printed")
 
 
-class PrintImageRequest(BaseModel):
-    """Request model for printing an image."""
-    filepath: str = Field(..., description="Absolute path to the image file")
-    title: Optional[str] = Field(
-        None, 
-        description="Optional title for the image printout"
-    )
-
-
-class PrintImageResponse(BaseModel):
-    """Response model for print_image."""
-    status: str = Field(..., description="Status of the operation")
-    message: str = Field(..., description="Confirmation message")
-    filepath: str = Field(..., description="Path of the image that was printed")
-    title: Optional[str] = Field(None, description="Title that was printed")
-
-
-class FeedCutRequest(BaseModel):
-    """Request model for feeding paper and cutting."""
-    pass  # No parameters needed
-
-
 class FeedCutResponse(BaseModel):
     """Response model for feed_cut."""
     status: str = Field(..., description="Status of the operation")
     message: str = Field(..., description="Confirmation message")
-
-
-class PrintConfigRequest(BaseModel):
-    """Request model for printing configuration."""
-    pass  # No parameters needed
 
 
 class PrintConfigResponse(BaseModel):
@@ -179,6 +149,7 @@ def _test_printer_connection():
 
 @app.post(
     "/print_message",
+    operation_id="print_message",
     response_model=PrintMessageResponse,
     summary="Print a basic message ticket",
     description="Prints a message with a title to the connected Star Micronics printer. The printer will automatically cut the paper after printing."
@@ -212,6 +183,7 @@ async def print_message(
 
 @app.post(
     "/print_task",
+    operation_id="print_task",
     response_model=PrintTaskResponse,
     summary="Print a task with due date",
     description="Prints a task with a title, message body, and due date to the connected Star Micronics printer. The printer will automatically cut the paper after printing."
@@ -251,70 +223,13 @@ async def print_task(
 
 
 @app.post(
-    "/print_image",
-    response_model=PrintImageResponse,
-    summary="Print an image with optional title",
-    description="Prints an image to the connected Star Micronics printer. The image will be automatically resized to fit the printer width (max 576px). The printer will automatically cut the paper after printing."
-)
-async def print_image(
-    request: PrintImageRequest = Body(..., description="Image print request")
-) -> PrintImageResponse:
-    """
-    Print an image with optional title.
-    
-    The image will be automatically resized to fit the printer (max width 576px).
-    Supported formats: JPEG, PNG, BMP, GIF.
-    """
-    try:
-        # Check if file exists
-        if not os.path.exists(request.filepath):
-            raise HTTPException(
-                status_code=404,
-                detail=f"Image file not found: {request.filepath}"
-            )
-        
-        # Resize image for printer
-        resized_path = resize_image_for_printer(request.filepath)
-        
-        # Print the image
-        msg = ImgMessage(filepath=resized_path, subject=request.title)
-        _print_message_internal(msg)
-        
-        # Clean up resized image if it's different from original
-        if os.path.exists(resized_path) and resized_path != request.filepath:
-            os.remove(resized_path)
-        
-        return PrintImageResponse(
-            status="success",
-            message=f"Printed image: {request.title or request.filepath}",
-            filepath=request.filepath,
-            title=request.title
-        )
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error in print_image: {str(e)}")
-        # Clean up resized image on error
-        if 'resized_path' in locals() and os.path.exists(resized_path) and resized_path != request.filepath:
-            try:
-                os.remove(resized_path)
-            except:
-                pass
-        raise HTTPException(
-            status_code=500,
-            detail=f"Failed to print image: {str(e)}"
-        )
-
-
-@app.post(
     "/feed_cut",
+    operation_id="feed_cut",
     response_model=FeedCutResponse,
     summary="Feed paper and cut",
     description="Feeds a line of paper and cuts it. Useful for advancing paper between prints or creating a clean cut."
 )
-async def feed_cut(
-    request: FeedCutRequest = Body(..., description="Feed and cut request")
-) -> FeedCutResponse:
+async def feed_cut() -> FeedCutResponse:
     """
     Feed paper and cut.
     
@@ -343,13 +258,12 @@ async def feed_cut(
 
 @app.post(
     "/print_config",
+    operation_id="print_config",
     response_model=PrintConfigResponse,
     summary="Print current configuration",
     description="Prints the current printer configuration to the printer itself. Useful for debugging and verifying settings."
 )
-async def print_config(
-    request: PrintConfigRequest = Body(..., description="Config print request")
-) -> PrintConfigResponse:
+async def print_config() -> PrintConfigResponse:
     """
     Print current configuration.
     
@@ -382,26 +296,32 @@ async def print_config(
 
 @app.get(
     "/health",
+    operation_id="health",
     response_model=HealthCheckResponse,
     summary="Health check endpoint",
-    description="Check if the TicketGremlin API server is running and if the printer is connected."
+    description="Check if the TicketGremlin API server is running and if the printer is connected. Returns HTTP 200 when healthy, 503 when the printer is unreachable (for Uptime Kuma and other monitors)."
 )
-async def health_check() -> HealthCheckResponse:
+async def health_check():
     """
     Health check endpoint.
-    
+
     Returns the health status of the API server and the printer connection.
-    This endpoint can be used for monitoring and load balancer health checks.
+    HTTP 200 = service up and printer reachable; HTTP 503 = printer degraded,
+    so external monitors (e.g. Uptime Kuma) flag the service as down.
     """
     with print_lock:
         printer_connected = _test_printer_connection()
-    
-    return HealthCheckResponse(
+
+    body = HealthCheckResponse(
         status="healthy" if printer_connected else "degraded",
         printer="connected" if printer_connected else "disconnected",
         connection_type=PRINTER_CONNECTION,
         host=PRINTER_HOST or "USB",
         port=PRINTER_PORT
+    )
+    return JSONResponse(
+        status_code=200 if printer_connected else 503,
+        content=body.model_dump()
     )
 
 
@@ -411,6 +331,7 @@ async def health_check() -> HealthCheckResponse:
 
 @app.get(
     "/",
+    operation_id="info",
     summary="API Information",
     description="Returns basic information about the TicketGremlin API server."
 )

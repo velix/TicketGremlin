@@ -46,9 +46,8 @@ openapi_server.py
 |--------|------|-------------|---------------|----------------|
 | POST | `/print_message` | Print a basic message ticket | `PrintMessageRequest` | `PrintMessageResponse` |
 | POST | `/print_task` | Print a task with due date | `PrintTaskRequest` | `PrintTaskResponse` |
-| POST | `/print_image` | Print an image (auto-resized) | `PrintImageRequest` | `PrintImageResponse` |
-| POST | `/feed_cut` | Feed paper and cut | `FeedCutRequest` | `FeedCutResponse` |
-| POST | `/print_config` | Print current configuration | `PrintConfigRequest` | `PrintConfigResponse` |
+| POST | `/feed_cut` | Feed paper and cut | (no body) | `FeedCutResponse` |
+| POST | `/print_config` | Print current configuration | (no body) | `PrintConfigResponse` |
 | GET | `/health` | Health check | - | `HealthCheckResponse` |
 | GET | `/` | API information | - | JSON |
 | GET | `/openapi.json` | OpenAPI specification | - | JSON |
@@ -60,9 +59,6 @@ openapi_server.py
 **Request Models:**
 - `PrintMessageRequest`: title (str), message (str)
 - `PrintTaskRequest`: title (str), message (str), due_date (str)
-- `PrintImageRequest`: filepath (str), title (Optional[str])
-- `FeedCutRequest`: (no parameters)
-- `PrintConfigRequest`: (no parameters)
 
 **Response Models:**
 - Each endpoint has a dedicated response model with status, message, and relevant data
@@ -122,7 +118,7 @@ With the **OpenAPI approach**, this issue is resolved because:
 3. In chat:
    - Click the **➕** button in the input area
    - Enable the tools you want to use
-   - The model can now call: `print_message`, `print_task`, `print_image`, `feed_cut`, `print_config`
+   - The model can now call: `print_message`, `print_task`, `feed_cut`, `print_config`
 
 ### Option 2: Global Tool Server (For Production/Shared Access)
 
