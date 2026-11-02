@@ -63,36 +63,32 @@ For multi-step tasks, state a brief plan:
 Strong success criteria let you loop independently. Weak criteria ("make it work") require constant clarification.
 
 
-## Setup
-Virtual env + deps: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`
-Make executable: `chmod +x main.py`
-Run: `./main.py` or `.venv/bin/python3 main.py`
+## Setup (Docker deployment)
+Build & run: `docker compose up -d --build`
+The container runs the FastAPI OpenAPI server on container port 8080, published on the host as 7143 (`"7143:8080"`). API base: `http://<host-ip>:7143` (Swagger docs at `/docs`, spec at `/openapi.json`).
 
-User must be in `lp` group: `sudo usermod -aG lp $USER` (requires relogin)
+For local hacking only: `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt`, then `python3 -m uvicorn openapi_server:app --host 0.0.0.0 --port 8080`.
 
-## Commands
-Print: `./main.py -t "title" -m "message"`
-Due date: `-d MMDDYYYY` or `-d ASAP`
-Feed & cut only: `--feed-cut`
-Print config: `--print-config`
+## API endpoints
+- `POST /print_message` — body `{title, message}`
+- `POST /print_task` — body `{title, message, due_date}` (MMDDYYYY or ASAP)
+- `POST /feed_cut` — no body
+- `POST /print_config` — no body (prints config on the printer)
+- `GET /health` — 200 when printer reachable, 503 when degraded (Uptime Kuma target)
 
 ## Config
-Printer connection is configured via env vars (PRINTER_CONNECTION=usb|network, PRINTER_HOST, PRINTER_PORT=9100) or `~/.config/gremlin/gremlin.ini`; env vars win. See `.env.example` for the Docker setup.
+Environment variables only, set in `docker-compose.yml`: `PRINTER_CONNECTION=network`, `PRINTER_HOST`, `PRINTER_PORT=9100`.
 
 ## Hardware
 Printer must be in ESC/POS mode: flip Dip Switch 1-1 to OFF.
-Current connection: network (Ethernet, 192.168.2.118:9100). USB still supported via PRINTER_CONNECTION=usb.
+Current connection: network (Ethernet, raw TCP 9100 at 192.168.2.118). Set a DHCP reservation for the printer's MAC on the router so the IP is stable.
 
 ## Code Structure
-- `main.py`: CLI entrypoint (argparse)
-- `Printers/StarPrinter.py`: Printer abstraction (Usb/Network via python-escpos)
-- `Printables/Message.py`: Base message class, handles line wrapping at 42 chars
+- `openapi_server.py`: FastAPI app — all endpoints + OpenAPI spec
+- `Printers/StarPrinter.py`: network-only printer via python-escpos (raw TCP 9100)
+- `Printables/Message.py`: base message class, wraps lines at 42 chars
 - `Printables/Task.py`: Message + due date
-- `Printables/ImgMessage.py`: Message + image support
-- `config.py`: Config file loading/saving
-- `detect_script.py`: USB printer endpoint detection
-
-Image syntax in messages: `[[image]]/path/to/image.jpg`
+- `config.py`: env-var config loading
 
 ## Dependencies
-python-escpos[usb,network], pyusb, Pillow, qrcode, python-barcode
+python-escpos[network], pyusb (import-time requirement of python-escpos), fastapi, uvicorn, requests (container healthcheck)

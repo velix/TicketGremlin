@@ -1,4 +1,4 @@
-from escpos.printer import Usb, Network
+from escpos.printer import Network
 from datetime import datetime
 from Printables.Message import Message
 from Printables.Task import Task
@@ -8,12 +8,11 @@ DEFAULT_PORT = 9100
 
 
 class StarPrinter:
-    def __init__(self, host=None, port=DEFAULT_PORT):
-        self.connection = "usb" if host is None else "network"
-        if host is None:
-            self.device = Usb(0x0519, 0x0001, 0, profile="TSP600", out_ep=0x03)
-        else:
-            self.device = Network(host, port, profile="TSP600")
+    """Network (Ethernet) connection to the Star printer over raw TCP 9100."""
+
+    def __init__(self, host, port=DEFAULT_PORT):
+        self.connection = "network"
+        self.device = Network(host, port, profile="TSP600")
         self.max_line_len = 42
 
     def _printHorizontalLine(self, char='-', length=42):

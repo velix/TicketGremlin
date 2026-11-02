@@ -164,7 +164,6 @@ docker run -d \
   -p 7143:8080 \
   --device /dev/bus/usb \
   -e PRINTER_CONNECTION=usb \
-  -v $(pwd)/config.json:/app/config.json:ro \
   -v $(pwd)/data:/app/data \
   ticketgremlin-openapi
 ```
@@ -183,7 +182,6 @@ services:
     devices:
       - "/dev/bus/usb:/dev/bus/usb"
     volumes:
-      - ./config.json:/app/config.json:ro
       - ./data:/app/data
 ```
 
@@ -199,7 +197,6 @@ Run with: `docker-compose up -d`
 
 ### Config File
 
-Create `config.json`:
 ```json
 {
   "connection": "usb",

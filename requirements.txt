@@ -1,14 +1,11 @@
-# Core dependencies for TicketGremlin
-# Printer support
-python-escpos[usb,network]
+# Printer support (raw TCP 9100 to the Star printer over Ethernet).
+# pyusb is required at import time by python-escpos even for network-only use.
+python-escpos[network]
 pyusb
-
-# Image handling
-Pillow
-qrcode
-python-barcode
 
 # OpenAPI server
 fastapi>=0.104.0
 uvicorn>=0.24.0
-python-multipart
+
+# Used by the container healthcheck
+requests>=2.31.0

@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from pydantic import BaseModel, Field
-from typing import Literal
 import logging
 import threading
 
@@ -21,11 +20,8 @@ PRINTER_CONNECTION = printer_config.get("connection", "usb")
 PRINTER_HOST = printer_config.get("host", "")
 PRINTER_PORT = int(printer_config.get("port", "9100"))
 
-# Initialize printer
-printer = StarPrinter(
-    host=PRINTER_HOST if PRINTER_CONNECTION == "network" else None,
-    port=PRINTER_PORT
-)
+# Initialize printer (network connection; PRINTER_HOST/PRINTER_PORT from env)
+printer = StarPrinter(host=PRINTER_HOST, port=PRINTER_PORT)
 
 # The printer accepts one TCP 9100 connection at a time; serialize print jobs
 print_lock = threading.Lock()
@@ -130,10 +126,7 @@ def _print_message_internal(printable):
 def _test_printer_connection():
     """Test if printer is connected and accessible."""
     try:
-        test_device = StarPrinter(
-            host=PRINTER_HOST if PRINTER_CONNECTION == "network" else None,
-            port=PRINTER_PORT
-        )
+        test_device = StarPrinter(host=PRINTER_HOST, port=PRINTER_PORT)
         test_device.device.open()
         test_device.device.ln(0)
         test_device.device.close()
