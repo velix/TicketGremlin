@@ -3,7 +3,7 @@
 > Author: [Kyle Beasley](www.github.com/krbeasley)
 
 A small service that prints "work tickets", notes and tasks on a Star Micronics
-TSP650 over Ethernet. It runs as a container on your LAN and exposes an OpenAPI
+TSP650 over Ethernet. It runs as a container on the LAN. It exposes an OpenAPI
 (REST) server that anything on the network — including OpenWebUI tools — can
 call to print labels remotely.
 
@@ -34,10 +34,10 @@ environment:
 
 | Method | Path | Body | Description |
 |--------|------|------|-------------|
-| POST | `/print_message` | `{title, message}` | Print a message ticket |
-| POST | `/print_task` | `{title, message, due_date}` | Print a task (`MMDDYYYY` or `ASAP`) |
-| POST | `/feed_cut` | none | Feed paper and cut |
-| POST | `/print_config` | none | Print the config on the printer |
+| POST | `/print_message` | `{title, message}` | A message ticket is printed |
+| POST | `/print_task` | `{title, message, due_date}` | A task is printed (`MMDDYYYY` or `ASAP`) |
+| POST | `/feed_cut` | none | Paper is fed and cut |
+| POST | `/print_config` | none | The config is printed on the printer |
 | GET | `/health` | — | `200` healthy, `503` printer unreachable (Uptime Kuma) |
 
 Example:
@@ -50,25 +50,27 @@ curl -X POST http://<host-ip>:7143/print_task \
 
 ## OpenWebUI
 
-Add the server as an **OpenAPI tool server** in OpenWebUI
+The server is added as an **OpenAPI tool server** in OpenWebUI
 (Settings → Admin → Tools) with URL `http://<host-ip>:7143/openapi.json`.
 Each POST endpoint becomes a callable tool (`print_message`, `print_task`,
 `feed_cut`, `print_config`).
 
 ## Monitoring
 
-Point Uptime Kuma (HTTP monitor) at `http://<host-ip>:7143/health`.
-It returns `503` whenever the printer is unreachable, so printer outages
-show up as downtime. The container's own healthcheck only checks that the
-API process is up and will not restart the container over a printer outage.
+Uptime Kuma (HTTP monitor) is pointed at `http://<host-ip>:7143/health`.
+The endpoint returns `503` whenever the printer is unreachable. Printer
+outages appear as downtime. The container's own healthcheck only checks
+that the API process is up. The container is not restarted over a printer
+outage.
 
 ---
 
 ## Hardware notes
 
-> Your Star Micronics TSP650 does not fully understand the ESC/POS commands this
-> application uses. To put your printer in ESC/POS mode, you must flip
-> `Dip Switch 1-1` from `On` to `Off`. Turn off your printer first. Unplug it even.
+> The Star Micronics TSP650 does not fully understand the ESC/POS commands this
+> application uses. ESC/POS mode must be enabled on the printer by flipping
+> `Dip Switch 1-1` from `On` to `Off`. The printer is switched off first. It is
+> unplugged too.
 
 The printer connects over Ethernet and listens on raw TCP port 9100
 (JetDirect/AppSocket), which is what `python-escpos`'s `Network` printer uses.
@@ -81,11 +83,11 @@ The printer connects over Ethernet and listens on raw TCP port 9100
 | **Extended ASCII (127-255)** | ❌ Not supported | Shows as garbage or "?" characters |
 | **Unicode Latin accented** | ⚠️ Partial support | Common accented vowels (à, é, ü, ï, etc.) work |
 | **Unicode Greek letters** | ❌ Not supported | Shows as garbage or "?" characters |
-| **Currency symbols** | ❌ Mostly not supported | €, £, ¥, etc. do not work; use text codes like "EUR", "USD", "kr" instead |
+| **Currency symbols** | ❌ Mostly not supported | €, £, ¥, etc. do not work. Use text codes like "EUR", "USD", "kr" instead |
 | **Text-based currency codes** | ✅ Supported | "kr", "USD", "EUR", etc. print correctly |
 
 ### Recommendations
-- Use **standard ASCII characters** (0-127) for maximum compatibility
-- For accented characters, test first - many Latin-1 Supplement characters work
-- Avoid **extended ASCII** (127-255) - these will not print correctly
-- Use **text currency codes** ("EUR", "USD", "kr") instead of symbols (€, $, £) for reliability
+- Standard ASCII characters (0-127) are used for maximum compatibility
+- Accented characters are tested first. Many Latin-1 Supplement characters work
+- Extended ASCII (127-255) is avoided. These characters do not print correctly
+- Text currency codes ("EUR", "USD", "kr") are used instead of symbols (€, $, £) for reliability
