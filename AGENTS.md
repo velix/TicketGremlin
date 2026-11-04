@@ -81,7 +81,7 @@ Environment variables only, set in `docker-compose.yml`: `PRINTER_CONNECTION=net
 
 ## Hardware
 Printer must be in ESC/POS mode: flip Dip Switch 1-1 to OFF.
-Current connection: network (Ethernet, raw TCP 9100 at 192.168.2.118). Set a DHCP reservation for the printer's MAC on the router so the IP is stable.
+Current connection: network (Ethernet, raw TCP 9100 at printer.local). Set a DHCP reservation for the printer's MAC on the router so the IP is stable.
 
 ## Code Structure
 - `openapi_server.py`: FastAPI app — all endpoints + OpenAPI spec

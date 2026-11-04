@@ -26,7 +26,7 @@ Printer connection is configured via environment variables in
 ```yaml
 environment:
   - PRINTER_CONNECTION=network
-  - PRINTER_HOST=192.168.2.118   # set a DHCP reservation for the printer's MAC
+  - PRINTER_HOST=printer.local   # set a DHCP reservation for the printer's MAC
   - PRINTER_PORT=9100             # raw ESC/POS (JetDirect) port
 ```
 
